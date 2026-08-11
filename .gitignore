@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+.Python
+.venv/
+venv/
+.env
+.DS_Store
+*.egg-info/
+.ipynb_checkpoints/
+.pytest_cache/
+results/results_champion.txt
+results/scores_champion.csv
+results/metrics_sens095.csv

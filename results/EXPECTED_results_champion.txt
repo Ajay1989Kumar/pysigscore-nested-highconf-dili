@@ -1,0 +1,40 @@
+Champion (nested LOO): pysigscore GSVA top-10 + rat OR
+======================================================================
+Seed: 13  |  TOP_K: 10  |  TARGET_SENS: 0.95
+Cohort: 102 drugs (95 toxic / 7 safe)
+OR+: 68  |  median λ: 1.25  (range 0.25–2.00)
+
+Model: score = z(GSVA_topk10) + λ · OR   [λ + top-k fit inside each LOO train fold]
+Expression features: Open TG-GATEs rat Affy log2FC → pysigscore GSVA (50 Hallmarks)
+OR: path_vacuol_fatty_high OR path_mod_severe_high OR chem_LWrel_1.2x_high
+
+NESTED LOOCV — fused champion (GSVA_topk10+OR)
+----------------------------------------------------------------------
+  AUROC   = 0.809   95% CI [0.617, 0.969]
+  AUPRC   = 0.983
+  @ Sens 0.95:
+    Sensitivity = 0.947  (90/95)
+    Specificity = 0.571  (4/7)
+    MCC         = +0.462
+    Precision   = 0.968
+    NPV         = 0.444
+    F1          = 0.957
+    Accuracy    = 0.922
+    Bal. acc.   = 0.759
+    FPR / FNR   = 0.429 / 0.053
+    TP/FN/FP/TN = 90/5/3/4
+    threshold   = -1.213868
+
+Expression-only nested (GSVA_topk10, no OR)
+----------------------------------------------------------------------
+  AUROC = 0.743
+  @ Sens 0.95: Spec=0.286  MCC=+0.233
+
+Leakage notes
+----------------------------------------------------------------------
+  • Nested LOO: pathway top-k, sign, z-stats, and λ never see the held-out drug.
+  • Not the optimistic two-stage (OOF-then-fuse) variant (AUROC ≈ 0.844).
+  • OR is rat pathology/chemistry (valid predictor), not human labels.
+  • GSVA scores are sample-wise (per-drug); fixed external Hallmark gene sets.
+
+Wall time: 2.1s

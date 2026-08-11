@@ -1,0 +1,101 @@
+LEAKAGE AUDIT REPORT — pysigscore high-conf DILI
+========================================================================
+PASS=16  FAIL=0  WARN=6  INFO=3
+
+SUMMARY VERDICT
+------------------------------------------------------------------------
+OVERALL: CONDITIONAL PASS — no direct train/test label leakage in core LOO feature fit; however two-stage stacking and champion selection introduce optimism (see WARNs). Prefer nested LOO metrics for publication.
+
+NESTED vs PUBLISHED (primary quantitative result)
+------------------------------------------------------------------------
+  GSVA_topk10_published             AUROC=0.7429  Spec@0.95=0.286  MCC=+0.233
+  GSVA_topk10_nested                AUROC=0.7429  Spec@0.95=0.286  MCC=+0.233
+  GSVA_topk10+OR_published          AUROC=0.8436  Spec@0.95=0.571  MCC=+0.462
+  GSVA_topk10+OR_nested             AUROC=0.8090  Spec@0.95=0.571  MCC=+0.462
+  GSVA_lr+OR_published              AUROC=0.7308  Spec@0.95=0.000  MCC=-0.062
+  GSVA_lr+OR_nested                 AUROC=0.6105  Spec@0.95=0.000  MCC=-0.062
+
+DETAILED FINDINGS
+------------------------------------------------------------------------
+[PASS] (-) A.sources :: human_labels_only_as_target
+    y_hard from highconf labels n=102; columns=['drug_key', 'y_hard', 'p_combined', 'n_sources_used']
+
+[PASS] (-) A.sources :: OR_is_rat_not_human_label
+    OR columns=['chem_LWrel_1.2x_high', 'path_mod_severe_high', 'path_vacuol_fatty_high']; human-like=none. OR is a valid *predictor* (rat phenotype), not target leakage.
+
+[PASS] (-) A.sources :: score_matrix_excludes_y
+    GSVA matrix shape=(102, 50), pure pathway scores
+
+[PASS] (-) A.sources :: cohort_alignment
+    labels=102 gsva=102 or=102 lab-gsva missing=[] lab-or missing=[]
+
+[PASS] (-) A.sources :: pysigscore_before_labels_in_main
+    run_pysigscore at char 643, y assignment at 15284
+
+[PASS] (-) A.sources :: genesets_external_not_fit_on_cohort
+    MSigDB Hallmark GMT is fixed external; not selected using y_hard on this cohort
+
+[PASS] (-) B.loo_code :: topk_no_test_label
+    topk uses ytr only; applies order/sign to Xte without y[te]
+
+[PASS] (-) B.loo_code :: classifier_fit_train_only
+    LR/HGBM fit on X[tr], y[tr]
+
+[PASS] (-) B.loo_code :: lambda_train_only
+    λ chosen on train fold
+
+[WARN] (medium) B.loo_code :: global_nan_impute_before_loo
+    fill_nan() uses column means over ALL drugs (incl. held-out) before LOOCV. Label-free but test-feature leakage for LR/HGBM/STACKED. Champion topk10 path uses scores[m] directly (NaNs rare after fillna(0) in log2FC).
+
+[WARN] (medium) B.loo_code :: rma_script_global_impute
+    RMA baseline also imputes NaNs with full-cohort column means before LOOCV
+
+[PASS] (-) F.scoring :: pysigscore_sample_wise_methods
+    Mean/Median/Z/ssGSEA operate per sample (drug) given fixed gene sets — held-out drug's score does not use other drugs' expression. GSVA (gseapy) is also per-sample rank enrichment; no label used.
+
+[PASS] (-) F.scoring :: log2fc_uses_own_controls_only
+    log2FC = mean(treated rows for drug d) − mean(control rows for drug d); no cross-drug or label dependence.
+
+[PASS] (-) F.scoring :: gene_filter_label_free
+    Dropping genes with all-NaN log2FC is label-free (may use full cohort presence; not supervised selection).
+
+[PASS] (-) E.cohort :: unique_drug_keys
+    duplicate drug_key rows=0
+
+[PASS] (-) E.cohort :: identical_SMILES_pairs
+    No identical SMILES among highconf drugs
+
+[INFO] (-) E.cohort :: rdkit_inchi_check
+    RDKit not in env; skipped InChIKey twin check
+
+[INFO] (-) E.cohort :: class_imbalance
+    y_hard counts={1: 95, 0: 7}; with n_safe=7, Spec@0.95 is highly unstable (1 safe misclass flips Spec by ~0.14).
+
+[PASS] (-) E.cohort :: cache_y_unused
+    log2FC script does not use cache.npz y (uses highconf labels only as target)
+
+[WARN] (high) D.eval :: champion_selected_on_full_OOF
+    28 models ranked by full-cohort LOOCV AUROC; champion = argmax. This is multiple-testing / selection bias — the reported champion AUROC is an optimistically selected estimate, not a pre-specified single model. Unbiased alternative: nested model selection inside each LOO fold.
+
+[WARN] (low) D.eval :: sens095_threshold_uses_all_OOF_toxics
+    metrics_at_sens sets threshold from quantile of ALL OOF toxic scores (including each drug's own OOF score in the toxic pool). Standard for post-hoc operating-point reporting on OOF, but not a deployable train-only threshold. AUROC is unaffected (rank metric).
+
+[INFO] (-) D.eval :: threshold_leave_one_toxic_stability
+    Full thr=-1.237650; LOO-toxic thr mean=-1.238353 sd=0.007632 range=[-1.240284,-1.206648]
+
+[WARN] (high) C.stacking :: two_stage_OOF_then_fuse_is_optimistic
+    Published GSVA_topk10+OR (two-stage): AUROC=0.8436 Spec@0.95=0.571 MCC=+0.462. True nested LOO (topk+λ inside each fold): AUROC=0.8090 Spec@0.95=0.571 MCC=+0.462. ΔAUROC(pub−nested)=+0.0346; corr(pub,nested)=0.9803. Two-stage uses OOF scores for j≠i that were trained WITH drug i present → mild second-order leakage into λ and z().
+
+[PASS] (-) C.stacking :: topk_alone_is_nested
+    Published GSVA_topk10 AUROC=0.7429; nested recompute AUROC=0.7429 (should match: topk LOO already nested). Δ=+0.0000e+00
+
+[WARN] (medium) C.stacking :: lr_plus_or_two_stage_vs_nested
+    Published GSVA_lr+OR AUROC=0.7308; nested LR+OR AUROC=0.6105; Δ=+0.1203
+
+RECOMMENDATIONS
+------------------------------------------------------------------------
+1. Report nested LOO for any +OR fusion (topk+λ inside each fold).
+2. Pre-specify ONE model (e.g. GSVA_topk10+OR) before looking at full table.
+3. Impute NaNs inside each LOO train fold (not global fill_nan).
+4. Set Sens@0.95 threshold on train tox only if claiming a deployable cutoff.
+5. Keep OR as a clearly rat-derived covariate (not a bug; document it).
