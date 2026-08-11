@@ -31,6 +31,18 @@ python3 scripts/run_champion_nested.py --verify
 
 Runtime: a few seconds on a laptop (CPU). GSVA pathway scores are **bundled** — no Affymetrix reprocessing required.
 
+### Unsupervised clustering (toxic vs safe geometry)
+
+```bash
+# Needs matplotlib + seaborn (see requirements.txt)
+python3 scripts/unsupervised_clustering.py
+```
+
+Labels are used **only post-hoc** for colouring/metrics — never for fitting PCA, t-SNE, k-means, or hierarchical clustering.  
+Frozen figures and tables live under [`results/unsupervised/`](results/unsupervised/) (see report there).
+
+**Headline:** full Hallmark pathway space does **not** form clean toxic vs safe clusters (silhouette &lt; 0, k-means ARI ≈ 0, balanced accuracy ≈ 0.5). Supervised nested GSVA top-10 + OR remains the predictive champion.
+
 ---
 
 ## What the model is
@@ -89,11 +101,18 @@ pysigscore-nested-highconf-dili/
 │   ├── rat_or_endpoints.csv                # 3 OR bits
 │   └── scores_log2fc_GSVA_hallmark.csv     # frozen 102×50 GSVA scores
 ├── scripts/
-│   └── run_champion_nested.py              # ★ main entry point
+│   ├── run_champion_nested.py              # ★ nested LOO champion
+│   └── unsupervised_clustering.py          # PCA / t-SNE / k-means / heatmap
 ├── results/
 │   ├── EXPECTED_results_champion.txt
 │   ├── EXPECTED_scores_champion.csv
-│   └── EXPECTED_metrics_sens095.csv
+│   ├── EXPECTED_metrics_sens095.csv
+│   └── unsupervised/                       # clustering figures + metrics
+│       ├── unsupervised_report.txt
+│       ├── summary_unsupervised_GSVA.png
+│       ├── pca_*.png / tsne_*.png
+│       ├── heatmap_GSVA_clustered.png
+│       └── separation_metrics.csv
 └── docs/
     ├── METHODOLOGY.md
     ├── LEAKAGE_AUDIT_REPORT.txt
