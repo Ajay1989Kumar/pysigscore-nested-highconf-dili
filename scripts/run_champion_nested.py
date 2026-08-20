@@ -11,9 +11,9 @@ Nested leave-one-drug-out (no two-stage stacking):
     2. On train only: choose λ maximizing AUROC of z(sig) + λ·OR
     3. Score drug i with train-fitted ranking / z / λ
 
-Human target (high-conf fusion labels):
+Human target (high-conf fusion labels; 7 bulk sources, no Manual):
   n_sources_used ≥ 3  AND  (p_combined ≥ 0.80 OR p_combined ≤ 0.20)
-  → 102 drugs (95 toxic / 7 safe)
+  → 101 drugs (94 toxic / 7 safe)
 
 Features:
   - data/scores_log2fc_GSVA_hallmark.csv
@@ -253,7 +253,7 @@ def format_report(
     lines.append("Leakage notes")
     lines.append("-" * 70)
     lines.append("  • Nested LOO: pathway top-k, sign, z-stats, and λ never see the held-out drug.")
-    lines.append("  • Not the optimistic two-stage (OOF-then-fuse) variant (AUROC ≈ 0.844).")
+    lines.append("  • Not the optimistic two-stage (OOF-then-fuse) variant (AUROC ≈ 0.845 on this cohort).")
     lines.append("  • OR is rat pathology/chemistry (valid predictor), not human labels.")
     lines.append("  • GSVA scores are sample-wise (per-drug); fixed external Hallmark gene sets.")
     lines.append("")
@@ -303,7 +303,7 @@ def verify(scores_path: str, report_path: str) -> int:
 
     if metric_lines(live_txt) != metric_lines(exp_txt):
         # softer: check key AUROC string present
-        if "AUROC   = 0.809" not in live_txt and "AUROC   = 0.809" not in exp_txt:
+        if "AUROC   = 0.790" not in live_txt and "AUROC   = 0.790" not in exp_txt:
             # extract AUROC from both
             pass
         live_auc = [ln for ln in live_txt.splitlines() if "AUROC   =" in ln]

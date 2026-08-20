@@ -52,7 +52,6 @@ gentamicin,0,0.012661,4
 glibenclamide,1,0.998733,5
 griseofulvin,1,0.999738,5
 haloperidol,1,0.999412,5
-hexachlorobenzene,1,0.992275,3
 hydroxyzine,0,0.1,3
 ibuprofen,1,0.999683,6
 imatinibmethanesulfonatesalt,1,0.986829,3
@@ -97,7 +96,7 @@ tetracycline,1,0.99765,4
 theophylline,0,0.019231,4
 thioridazine,1,0.998733,5
 ticlopidine,1,0.999738,5
-tolbutamide,1,0.929687,4
+tolbutamide,1,0.929688,4
 triamterene,1,0.992865,4
 valproicacid,1,0.999935,6
 vitamina,1,0.994534,3

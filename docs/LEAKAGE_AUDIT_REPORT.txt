@@ -1,5 +1,15 @@
 LEAKAGE AUDIT REPORT — pysigscore high-conf DILI
 ========================================================================
+ADDENDUM (no-Manual labels)
+------------------------------------------------------------------------
+Labels rebuilt without the hand-curated Manual source (7 bulk human-clinical
+sources only). Cohort is now 101 drugs (94 toxic / 7 safe); hexachlorobenzene
+dropped (n_sources_used fell from 3 to 2). Nested GSVA_topk10+OR on this
+cohort: AUROC=0.790  Spec@0.95=0.571  MCC=+0.462. Two-stage OOF-then-fuse
+on the same cohort: AUROC=0.845  Spec@0.95=0.429  MCC=+0.353.
+The findings below were generated on the previous 102-drug with-Manual set
+and are retained as the original audit record.
+
 PASS=16  FAIL=0  WARN=6  INFO=3
 
 SUMMARY VERDICT

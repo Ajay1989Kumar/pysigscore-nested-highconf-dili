@@ -2,14 +2,15 @@
 
 ## Target
 
-High-confidence human DILI labels from multi-source independent-Bayes fusion:
+High-confidence human DILI labels from independent-Bayes fusion of **seven bulk human-clinical sources** (DILIrank, DILIst, LiverTox, SIDER hepatic, Greene HUMANS, T3DB-clinical, ATSDR-clinical). The hand-curated **Manual** source is excluded.
 
 ```text
 n_sources_used ≥ 3  AND  (p_combined ≥ 0.80 OR p_combined ≤ 0.20)
 ```
 
-Cohort: **102 drugs** (95 toxic / 7 safe).  
-Source: [entropy-or-highconf-human-dili](https://github.com/Ajay1989Kumar/entropy-or-highconf-human-dili).
+Cohort: **101 drugs** (94 toxic / 7 safe).  
+Drop vs with-Manual: **hexachlorobenzene** (Manual was its third informative source).  
+Source: [entropy-or-highconf-human-dili](https://github.com/Ajay1989Kumar/entropy-or-highconf-human-dili) (`human_dili_highconf_labels_nomanual.csv`).
 
 ## Features
 
@@ -20,7 +21,7 @@ Source: [entropy-or-highconf-human-dili](https://github.com/Ajay1989Kumar/entrop
 3. Map rat Entrez → human gene symbols (ortholog table); average multi-probe symbols.
 4. Score MSigDB Hallmark gene sets with **[pysigscore](https://github.com/bioinformatics-hub/pysigscore) GSVA** (sample-wise).
 
-Bundled frozen matrix: `data/scores_log2fc_GSVA_hallmark.csv` (102 × 50).
+Bundled frozen matrix: `data/scores_log2fc_GSVA_hallmark.csv` (101 × 50).
 
 ### B. Rat OR rule (binary)
 
@@ -42,7 +43,7 @@ For each held-out drug \(i\):
 3. **Train-only λ:** grid search maximizing train AUROC of \(z(\mathrm{sig})+\lambda\cdot\mathrm{OR}\).
 4. Apply train ranking / z / λ to drug \(i\).
 
-This avoids **two-stage stacking leakage** (OOF-then-fuse), which inflated AUROC from **0.809 → 0.844** in an earlier draft.
+This avoids **two-stage stacking leakage** (OOF-then-fuse), which inflated AUROC from **0.790 → 0.845** on this no-Manual cohort.
 
 ## Operating point
 
@@ -53,8 +54,8 @@ Primary ranking metric: **AUROC** (threshold-free).
 
 | Model | AUROC | Spec@Sens0.95 | MCC@Sens0.95 |
 |-------|------:|--------------:|-------------:|
-| **GSVA_topk10+OR (nested)** | **0.809** | **0.571** | **+0.462** |
-| GSVA_topk10 (nested, no OR) | 0.743 | 0.286 | +0.233 |
-| Two-stage OOF+fuse (do not use) | 0.844 | 0.571 | +0.462 |
+| **GSVA_topk10+OR (nested)** | **0.790** | **0.571** | **+0.462** |
+| GSVA_topk10 (nested, no OR) | 0.746 | 0.286 | +0.233 |
+| Two-stage OOF+fuse (do not use) | 0.845 | 0.429 | +0.353 |
 
 See `docs/LEAKAGE_AUDIT_REPORT.txt` for the full audit.

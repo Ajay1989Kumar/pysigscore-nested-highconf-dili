@@ -6,13 +6,13 @@
 |---|---|
 | **Model** | `score = z(GSVA_topk10) + λ · OR` |
 | **CV** | **Nested** leave-one-drug-out (top-k, z-stats, and λ fit **inside** each train fold) |
-| **AUROC** | **0.809** (95% CI ≈ [0.64, 0.95]) |
+| **AUROC** | **0.790** (95% CI ≈ [0.58, 0.97]) |
 | **@ Sens 0.95** | Spec **0.57** · MCC **+0.462** · Prec **0.97** |
-| **Cohort** | 102 drugs (95 toxic / 7 safe) |
+| **Cohort** | 101 drugs (94 toxic / 7 safe), high-conf labels **without Manual** |
 | **Seed** | 13 |
 
 > This is the **nested** (honest) version of the GSVA+OR model.  
-> An earlier two-stage “OOF-then-fuse” draft reported AUROC **0.844** and is **not** the champion here (stacking optimism; see [docs/METHODOLOGY.md](docs/METHODOLOGY.md) and the leakage audit).
+> Two-stage “OOF-then-fuse” on this same cohort is AUROC **0.845** and is **not** the champion (stacking optimism; see [docs/METHODOLOGY.md](docs/METHODOLOGY.md) and the leakage audit).
 
 ---
 
@@ -77,15 +77,15 @@ score = z(sig) + λ · OR
 
 | Metric | Value |
 |---|---|
-| Sensitivity (Recall) | **0.95** (90/95) |
+| Sensitivity (Recall) | **0.95** (89/94) |
 | Specificity | **0.57** (4/7) |
 | MCC | **+0.462** |
 | Precision (PPV) | **0.97** |
-| AUROC | **0.809** |
+| AUROC | **0.790** |
 | AUPRC | **0.98** |
-| TP / FN / FP / TN | **90 / 5 / 3 / 4** |
+| TP / FN / FP / TN | **89 / 5 / 3 / 4** |
 
-Expression-only nested (`GSVA_topk10`, no OR): AUROC **0.743**, Spec@0.95 **0.29**, MCC **+0.233**.
+Expression-only nested (`GSVA_topk10`, no OR): AUROC **0.746**, Spec@0.95 **0.29**, MCC **+0.233**.
 
 ---
 
@@ -99,7 +99,7 @@ pysigscore-nested-highconf-dili/
 ├── data/
 │   ├── human_dili_highconf_labels.csv      # high-conf y_hard
 │   ├── rat_or_endpoints.csv                # 3 OR bits
-│   └── scores_log2fc_GSVA_hallmark.csv     # frozen 102×50 GSVA scores
+│   └── scores_log2fc_GSVA_hallmark.csv     # frozen 101×50 GSVA scores
 ├── scripts/
 │   ├── run_champion_nested.py              # ★ nested LOO champion
 │   └── unsupervised_clustering.py          # PCA / t-SNE / k-means / heatmap
@@ -127,8 +127,10 @@ pysigscore-nested-highconf-dili/
 n_sources_used ≥ 3  AND  (p_combined ≥ 0.80 OR p_combined ≤ 0.20)
 ```
 
+Seven bulk **human-clinical** sources only (DILIrank, DILIst, LiverTox, SIDER hepatic, Greene HUMANS, T3DB-clinical, ATSDR-clinical). The hand-curated **Manual** source is **excluded**. Dropping Manual removes **hexachlorobenzene** (it had only 2 remaining informative sources).
+
 Upstream: [dili-labels-446-human-only](https://github.com/Ajay1989Kumar/dili-labels-446-human-only) →  
-[entropy-or-highconf-human-dili](https://github.com/Ajay1989Kumar/entropy-or-highconf-human-dili).
+[entropy-or-highconf-human-dili](https://github.com/Ajay1989Kumar/entropy-or-highconf-human-dili) (`human_dili_highconf_labels_nomanual.csv`).
 
 ---
 

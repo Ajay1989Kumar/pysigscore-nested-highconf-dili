@@ -1,24 +1,23 @@
 Unsupervised clustering of pysigscore scores — interpretation
 ======================================================================
-Cohort: 102 drugs (95 toxic / 7 safe). Labels NOT used to fit PCA/t-SNE/k-means/hierarchical.
+Cohort: 101 drugs (94 toxic / 7 safe). Labels NOT used to fit PCA/t-SNE/k-means/hierarchical.
 
 KEY CAVEAT — majority baseline
 ----------------------------------------------------------------------
-Because 95/102 drugs are toxic, any clustering that puts almost everyone
+Because 94/101 drugs are toxic, any clustering that puts almost everyone
 in one big group gets purity/accuracy ≈ 0.931 without separating classes.
 That is NOT evidence of separation. Prefer balanced accuracy, ARI, silhouette,
 and PC1 AUROC.
 
 GSVA Hallmark scores (primary pysigscore method)
 ----------------------------------------------------------------------
-  Silhouette (toxic vs safe as groups): -0.024   (< 0 ⇒ classes overlap in space)
-  PC1 |AUROC| (post-hoc ranking):       0.636   (modest > 0.50)
-  PC1 Mann-Whitney p:                   2.39e-01
-  Between/within centroid ratio:        0.524  (<1 ⇒ clouds overlap)
+  Silhouette (toxic vs safe as groups): -0.025   (< 0 ⇒ classes overlap in space)
+  PC1 |AUROC| (post-hoc ranking):       0.640   (modest > 0.50)
+  PC1 Mann-Whitney p:                   2.26e-01
+  Between/within centroid ratio:        0.526  (<1 ⇒ clouds overlap)
   k-means k=2 ARI vs labels:            -0.034   (≈ 0 ⇒ chance agreement)
   k-means post-hoc accuracy:            0.931  (≈ majority 0.931)
   k-means post-hoc balanced accuracy:   0.500  (≈ 0.5 = chance)
-  LOO distance-to-toxic-centroid AUROC: 0.456
 
 Across all methods (GSVA, ssGSEA, Mean, Median, Z, STACKED)
 ----------------------------------------------------------------------
@@ -33,7 +32,7 @@ partition toxic vs safe drugs. Safes are **intermixed** with toxics in PCA/t-SNE
 and hierarchical trees. k-means (k=2) recovers majority-toxic groups, not
 a safe cluster.
 
-The supervised nested model (GSVA top-10 + OR, AUROC ≈ 0.81) works by
+The supervised nested model (GSVA top-10 + OR, AUROC ≈ 0.79) works by
 **selecting a few pathways and fusing OR**, not because toxic/safe form
 natural clusters in the full 50-D pathway space.
 
