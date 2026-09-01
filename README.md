@@ -14,6 +14,8 @@
 > This is the **nested** (honest) version of the GSVA+OR model.  
 > Two-stage “OOF-then-fuse” on this same cohort is AUROC **0.845** and is **not** the champion (stacking optimism; see [docs/METHODOLOGY.md](docs/METHODOLOGY.md) and the leakage audit).
 
+> **External validation (DrugMatrix):** the architecture generalizes to an independent database — frozen expression arm transfers (AUROC 0.72), and with a recalibrated rat arm the fusion reaches **AUROC 0.791 / MCC +0.478**, matching the internal champion. The expression arm is portable; the rat-endpoint arm must be recalibrated per dataset. See [docs/EXTERNAL_VALIDATION_DRUGMATRIX.md](docs/EXTERNAL_VALIDATION_DRUGMATRIX.md).
+
 ---
 
 ## Quick start
