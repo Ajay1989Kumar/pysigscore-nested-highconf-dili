@@ -73,6 +73,30 @@ predictor of *platform* reaches only 0.62 — well below the DILI-label 0.764. A
 MCC is now significant (+0.357 [+0.13, +0.58]) on 36 negatives across two independent
 datasets, versus a non-significant MCC on 7.
 
+## Batch-correction sensitivity (ComBat)
+
+Because the negatives are DrugMatrix-enriched, platform partly tracks the label. We
+re-ran the merged champion after empirical-Bayes batch correction (ComBat, run
+**unsupervised** — no DILI-label covariate — so it cannot leak the outcome).
+
+| Merged champion | Uncorrected | ComBat |
+|---|---:|---:|
+| AUROC | 0.764 [0.66, 0.86] | 0.720 [0.62, 0.82] |
+| MCC @ Sens 0.95 | +0.357 [+0.13, +0.58] | +0.299 [+0.12, +0.48] |
+| best-MCC | +0.460 | +0.357 |
+| within-TG-GATEs AUROC | 0.767 | 0.767 |
+| within-DrugMatrix AUROC | 0.746 | 0.732 |
+| platform-confound AUROC | 0.620 | 0.465 |
+
+ComBat removed the platform structure (confound AUROC 0.620 → 0.465 ≈ chance). Pooled
+AUROC fell modestly (0.764 → 0.720) — the between-platform confounded component — but
+the **within-platform AUROCs were essentially unchanged** (within-TG identical at 0.767)
+and the MCC stayed significant. The merged model survives explicit batch correction; the
+conservative cross-platform estimate is **AUROC 0.720 / MCC +0.299**. Reproduce:
+`python scripts/reliable_negatives/combat_sensitivity.py` (requires `inmoose`). Methods:
+ComBat (Johnson et al. 2007), sva (Leek et al. 2012), cross-platform normalization for
+ML (Foltz et al. 2023).
+
 ## Caveats
 
 - **Selection optimism.** Mined negatives were chosen partly by an expression model and

@@ -139,6 +139,19 @@ Pooling both datasets then places **both classes on both platforms** (TG 94T/7S;
 
 The signal is DILI, not platform: the champion performs essentially identically within each platform (0.767 vs 0.746 vs pooled 0.764) — if the pooled result were platform-driven, the within-platform AUROCs would collapse to ~0.5 — and a predictor of *platform* reaches only 0.62, well below the DILI-label 0.764. The MCC is now significant on 36 negatives across two independent datasets, versus a non-significant MCC on 7. (Caveat: the mined negatives were expression-selected and expression-scored, so the *stability/significance* gains are fully valid but the *point-estimate lift* carries mild selection optimism; the within-TG-GATEs result, whose seven negatives are the untouched anchors, is the cleanest reference.)
 
+**Batch-correction sensitivity analysis (ComBat).** Because the negatives are DrugMatrix-enriched, platform partly tracks the label; we therefore re-ran the merged champion after empirical-Bayes batch correction (ComBat, run unsupervised — no DILI-label covariate — so the correction cannot leak the outcome).
+
+| Merged champion | Uncorrected (GSVA-native) | ComBat-corrected |
+|---|---:|---:|
+| AUROC | 0.764 [0.66, 0.86] | 0.720 [0.62, 0.82] |
+| MCC @ Sens 0.95 | +0.357 [+0.13, +0.58] | +0.299 [+0.12, +0.48] |
+| best-MCC | +0.460 | +0.357 |
+| within-TG-GATEs AUROC | 0.767 | 0.767 |
+| within-DrugMatrix AUROC | 0.746 | 0.732 |
+| platform-confound AUROC | 0.620 | 0.465 |
+
+ComBat removed the platform structure (platform-confound AUROC 0.620 → 0.465 ≈ chance). The pooled AUROC fell modestly (0.764 → 0.720) — the between-platform component that was partly confounded with the label — but the **within-platform AUROCs were essentially unchanged** (within-TG-GATEs identical at 0.767; within-DrugMatrix 0.746 → 0.732), and the MCC remained significant (+0.299 [+0.12, +0.48]). The merged model therefore *survives* explicit batch correction: the conservative cross-platform estimate is AUROC 0.720 / MCC +0.299, and the ~0.04 AUROC difference is attributable to (and removed as) platform effect rather than lost biology.
+
 ## 4. Discussion
 
 The internal ranking (rat endpoints > expression) *inverts* on transfer: the potent-but-parochial modality is the measured phenotype, whereas the portable modality is pathway-level expression. This is mechanistically sensible. Hallmark GSVA scores are relative, rank-based enrichments largely invariant to platform and batch, so a model frozen on them generalizes — indeed, the frozen TG-GATEs signature out-predicts a model trained natively on DrugMatrix (0.721 vs 0.632; §3.6), because rank-based pathway features carry a stable, transferable cross-species signal that the smaller target cohort cannot re-learn on its own. Apical endpoints, by contrast, depend on study-specific scoring conventions, dosing, and reference ranges; their marginal distributions differ across laboratories (base rate 0.68 vs 0.51), so a classifier frozen on one resource's thresholds misfires on another's — even though the underlying biology (ALT → DILI) is conserved (0.74).
@@ -173,5 +186,8 @@ Code (feature pipelines, nested-CV models, external-validation scripts) and deri
 7. Chen EY, et al. *Enrichr / gseapy.* (tooling for gene-set scoring.)
 8. Thakkar S, et al. *DILIrank / DILIst.* Drug Discov Today / Regul context.
 9. Matthews BW. *Comparison of predicted and observed secondary structure (MCC).* Biochim Biophys Acta 1975.
+10. Johnson WE, Li C, Rabinovic A. *Adjusting batch effects in microarray expression data using empirical Bayes methods (ComBat).* Biostatistics 2007;8(1):118–27. doi:10.1093/biostatistics/kxj037.
+11. Leek JT, et al. *The sva package for removing batch effects and other unwanted variation in high-throughput experiments.* Bioinformatics 2012;28(6):882–3. doi:10.1093/bioinformatics/bts034.
+12. Foltz SM, Greene CS, Taroni JN. *Cross-platform normalization enables machine learning model training on microarray and RNA-seq data simultaneously.* Commun Biol 2023;6:222. doi:10.1038/s42003-023-04588-6.
 
 *Prepared with computational assistance from Claude Code (Anthropic). Numerical results are from the analyses recorded in this repository.*
