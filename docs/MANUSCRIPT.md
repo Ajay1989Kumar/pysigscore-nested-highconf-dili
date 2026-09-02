@@ -113,10 +113,11 @@ The differential transferability above is carried by a single, parsimonious comp
 
 | Metric | TG-GATEs (internal LOOCV, n=101) | DrugMatrix (frozen transfer, n=57) | drop |
 |---|---:|---:|---:|
-| AUROC | 0.748 (perm-p .013) | 0.721 (perm-p .014) | −0.027 |
-| best MCC | +0.462 | +0.361 | −0.10 |
+| AUROC (threshold-free) | 0.748 (perm-p .013) | 0.721 (perm-p .014) | −0.027 |
+| best-MCC | +0.462 (at Sens 0.95 / Spec 0.57) | +0.361 (at Sens 0.57 / Spec 0.90) | −0.10 |
+| MCC @ Sens ≈ 0.95 | +0.462 (Spec 0.57) | +0.183 (Spec 0.20) | −0.28 |
 
-The signature retains ~96% of its internal AUROC across a change of laboratory and platform batch (Affymetrix RG230 DrugMatrix vs TG-GATEs), and both endpoints are significant against a label-permutation null. These values are the expression-arm quantities of §3.1–§3.5 recomputed on the internal-champion training cohort (cf. expression-only 0.746, §3.2; frozen-expression 0.723, §3.5).
+The signature retains ~96% of its internal AUROC across a change of laboratory and platform batch (Affymetrix RG230 DrugMatrix vs TG-GATEs), and both AUROCs are significant against a label-permutation null. AUROC (threshold-free) is the primary summary; MCC is threshold-dependent and we report it two ways to avoid an operating-point mismatch. **best-MCC** takes the MCC-optimal cutoff on each set: internally this coincides with the 95%-sensitivity point (+0.462), but on DrugMatrix the optimum trades sensitivity for specificity (Sens 0.57 / Spec 0.90) to reach +0.361. Held to a **fixed high-sensitivity operating point** (Sens ≈ 0.95, the convention of §3.1/§3.5), the transferred MCC is +0.183 — the honest cost of freezing a threshold across a base-rate shift. These are the expression-arm quantities of §3.1–§3.5 recomputed on the internal-champion training cohort (cf. expression-only 0.746, §3.2; frozen-expression best-MCC 0.353, §3.5).
 
 **Transfer beats native training.** Under the *same* within-dataset LOOCV protocol applied to each database, the GSVA signature scores 0.748 on TG-GATEs but only **0.632 on DrugMatrix** (n=57) — because DrugMatrix self-LOOCV must train each fold on ~56 drugs with 10 negatives, too few to learn a stable signature. The frozen TG-GATEs signature transferred to DrugMatrix (**0.721**) therefore **exceeds DrugMatrix's own within-dataset LOOCV (0.632)**: a model that never saw a DrugMatrix label predicts DrugMatrix DILI better than one trained on DrugMatrix itself. The cross-species knowledge learned on TG-GATEs is genuinely additive, not merely recoverable from the target resource. (The 48-feature L2-logistic is not a reliable transferable model — it collapses to chance under internal LOOCV, 0.506, owing to the 7-negative imbalance; the low-parameter GSVA signature is the consistent choice across every protocol.)
 

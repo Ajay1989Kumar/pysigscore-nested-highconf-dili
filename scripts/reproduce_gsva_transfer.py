@@ -10,7 +10,7 @@ Run from the repo root:  python scripts/reproduce_gsva_transfer.py
 import warnings; warnings.filterwarnings("ignore")
 import numpy as np, pandas as pd
 from pathlib import Path
-from sklearn.metrics import roc_auc_score, matthews_corrcoef
+from sklearn.metrics import roc_auc_score, matthews_corrcoef, confusion_matrix
 from sklearn.model_selection import LeaveOneOut
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -32,7 +32,14 @@ def sig_fit(Xtr, ytr, K=10):
     s0 = ((f - mu) / sd).mean(1); ms, ss = s0.mean(), (s0.std() or 1)
     return lambda X: ((((X[:, order] * sgn[order]) - mu) / sd).mean(1) - ms) / ss
 
-def best_mcc(y, s): return max(matthews_corrcoef(y, (s >= t).astype(int)) for t in np.unique(s))
+def _ss(y, s, thr):
+    p = (s >= thr).astype(int); tn, fp, fn, tp = confusion_matrix(y, p, labels=[0, 1]).ravel()
+    return tp / (tp + fn), tn / (tn + fp), matthews_corrcoef(y, p)
+def best_mcc(y, s):
+    mc, t = max((matthews_corrcoef(y, (s >= t).astype(int)), t) for t in np.unique(s))
+    se, sp, _ = _ss(y, s, t); return mc, se, sp
+def mcc_sens95(y, s):
+    se, sp, mc = _ss(y, s, np.quantile(s[y == 1], 0.05)); return mc, se, sp
 def perm_p(y, s, obs, n=10000):
     rng = np.random.default_rng(7)
     return (sum(roc_auc_score(rng.permutation(y), s) >= obs for _ in range(n)) + 1) / (n + 1)
@@ -44,8 +51,10 @@ def loocv_sig(X, y):
 
 def line(tag, y, s):
     au = roc_auc_score(y, s)
-    print(f"  {tag:42s} AUROC={au:.3f}  perm-p={perm_p(y,s,au):.3f}  bestMCC={best_mcc(y,s):+.3f}  "
-          f"({int(y.sum())}T/{int((y==0).sum())}S)")
+    bm, bse, bsp = best_mcc(y, s); sm, sse, ssp = mcc_sens95(y, s)
+    print(f"  {tag:42s} AUROC={au:.3f} (perm-p={perm_p(y,s,au):.3f})  "
+          f"best-MCC={bm:+.3f} @Sens{bse:.2f}/Spec{bsp:.2f}  "
+          f"MCC@Sens0.95={sm:+.3f} (Spec{ssp:.2f})  ({int(y.sum())}T/{int((y==0).sum())}S)")
 
 meas = [d for d in ext.index if d in me.index and d in dm.index]
 full = [d for d in ext.index if d in dm.index]

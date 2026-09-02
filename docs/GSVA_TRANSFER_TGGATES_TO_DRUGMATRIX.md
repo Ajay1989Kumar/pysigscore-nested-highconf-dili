@@ -10,13 +10,23 @@ for the full two-arm study and [`METHODOLOGY.md`](METHODOLOGY.md) for the signat
 
 | Metric | TG-GATEs (internal LOOCV, n=101) | DrugMatrix (frozen transfer, n=57) | drop |
 |--------|----------------------------------|------------------------------------|------|
-| AUROC | 0.748 (perm-p .013) | 0.721 (perm-p .014) | −0.027 |
-| best MCC | +0.462 | +0.361 | −0.10 |
+| AUROC (threshold-free) | 0.748 (perm-p .013) | 0.721 (perm-p .014) | −0.027 |
+| best-MCC | +0.462 (Sens 0.95 / Spec 0.57) | +0.361 (Sens 0.57 / Spec 0.90) | −0.10 |
+| MCC @ Sens ≈ 0.95 | +0.462 (Spec 0.57) | +0.183 (Spec 0.20) | −0.28 |
 
 The signature keeps ~96% of its internal AUROC when applied — **frozen, without any
 refitting or DrugMatrix labels** — to an independent database with a different platform
-batch and a different set of drugs. Both results are significant against a
+batch and a different set of drugs. Both AUROCs are significant against a
 label-permutation null (perm-p ≈ .013–.014).
+
+**MCC is reported at two matched operating points**, because it is threshold-dependent.
+*best-MCC* takes the MCC-optimal cutoff on each set — internally this happens to be the
+95%-sensitivity point (+0.462), but on DrugMatrix the optimum trades sensitivity for
+specificity (Sens 0.57 / Spec 0.90) to reach +0.361. Held to a *fixed high-sensitivity*
+threshold (Sens ≈ 0.95), the transferred MCC is +0.183 — the cost of freezing a decision
+threshold across a base-rate shift. AUROC (rank-based, threshold-free) is the reliable
+transfer summary; the MCC gap is an operating-point/threshold effect, not a loss of
+discrimination.
 
 ## Why the GSVA signature is the model that transfers
 
