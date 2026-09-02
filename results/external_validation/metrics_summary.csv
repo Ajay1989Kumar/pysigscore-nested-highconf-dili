@@ -1,0 +1,12 @@
+stage,model,cohort_n,toxic,safe,auroc,auroc_ci_lo,auroc_ci_hi,best_mcc,notes
+expression_only,GSVA_top10_signature,69,55,14,0.655,0.47,0.82,,frozen TG-GATEs signature -> external
+expression_only,L2_logistic_48_GSVA,69,55,14,0.706,0.53,0.85,,frozen -> external
+frozen_gbm,expression_only,57,47,10,0.723,0.55,0.88,0.353,frozen GSVA sig transfers
+frozen_gbm,rat_panel_frozen,57,47,10,0.470,0.32,0.61,0.173,frozen TG-GATEs rat panel FAILS to transfer
+frozen_gbm,full_gbm_gsva_plus_rat,57,47,10,0.499,0.32,0.69,0.081,frozen GBM collapses (rat arm domain shift)
+diagnostic,drugmatrix_native_ALT,57,47,10,0.737,,,,DM-native ALT vs DILI (signal is real)
+diagnostic,drugmatrix_native_ORbit,57,47,10,0.627,,,,DM-native OR rule vs DILI
+recalibrated,expression_only_frozen,57,47,10,0.723,0.54,0.88,0.353,LOOCV within external cohort
+recalibrated,rat_arm_recalibrated,57,47,10,0.736,0.58,0.87,0.408,rat refit on DM-native scale
+recalibrated,gsva_frozen_plus_rat_recal_metaLR,57,47,10,0.755,0.59,0.89,0.394,
+recalibrated,gsva_frozen_plus_rat_recal_zsum,57,47,10,0.791,0.64,0.92,0.478,RECOVERS champion-level (internal 0.795/+0.462)
